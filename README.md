@@ -1,8 +1,34 @@
 # MikaSnowflake
-ETL Proces pre Lemming Databázu
+ETL Proces pre Chinook Databázu
 
-Tento dokument popisuje ETL (Extract, Transform, Load) proces pre Lemming databázu, ktorá spracováva údaje z Chinook datasetu. Proces zahŕňa extrakciu údajov z CSV súborov uložených v staging oblasti, transformáciu do štruktúrovaného formátu a načítanie týchto údajov do dimenzionálnych a faktových tabuliek pre analýzu.
-Predpoklady
+Tento projekt popisuje ETL (Extract, Transform, Load) proces pre spracovanie údajov zo známeho hudobného datasetu Chinook, ktorý obsahuje informácie o predajoch, zákazníkoch, skladbách, albumoch a ďalších aspektoch hudobného distribučného systému.
+Účel projektu:
+
+Cieľom tohto projektu je extrahovať údaje zo súborov CSV, transformovať ich do štruktúrovaného formátu a načítať ich do Snowflake databázy, kde sa vytvoria dimenzionálne a faktové tabuľky. Tieto tabuľky umožnia generovať prehľady a analytické vizualizácie, ktoré poskytujú cenné informácie o tržbách, zákazníkoch, zamestnancoch a ďalších metrikách súvisiacich s predajmi hudby.
+Stručný popis ERD (Entity Relationship Diagram):
+
+Databázová schéma Chinook je navrhnutá na analýzu predajov hudobného obsahu. Hlavné entity zahŕňajú:
+
+    Zákazníci (Customers): Informácie o zákazníkoch, ako sú meno, adresa, kontaktné údaje a pod.
+    Zamestnanci (Employees): Informácie o zamestnancoch, ktorí spravujú predaje.
+    Produkty (Tracks, Albums, Genres, MediaTypes): Údaje o skladbách, albumoch, žánroch a médiách, cez ktoré sa predávajú skladby.
+    Predaje (Invoices a InvoiceLines): Transakčné údaje o nákupoch, ktoré zákazníci uskutočnili.
+    Dátumy (Date): Kľúčová dimenzia pre analýzu predajov podľa časových období (mesiace, roky, kvartály, atď.).
+
+ERD Diagram Zdrojových Dát:
+
+    ![Chinook_ERD](https://github.com/user-attachments/assets/87f799f4-3615-47bf-bb86-2b635029c3e6)
+
+Tento diagram zobrazuje kľúčové tabulky a ich vzťahy, ktoré sú základom pre analytické procesy v rámci tohto projektu.
+
+
+STAR Diagram:
+
+    ![Chinook_Starschema](https://github.com/user-attachments/assets/bd1d45e9-3223-4dea-9db2-071e080b7ae1)
+
+Tento diagram zobrazuje dimenzionálne tabulky a ich vzťahy s Tabuľkov faktov ktorá umožnuje lepšiu prístupnosť a vizualizáciu dát.
+
+ETL Proces
 
 Pred spustením ETL procesu sa uistite, že sú splnené nasledujúce predpoklady:
 
