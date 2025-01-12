@@ -2,94 +2,6 @@ DROP DATABASE IF EXISTS ChinookDb;
 CREATE DATABASE ChinookDb;
 USE ChinookDb;
 
--- Staging Tables
-CREATE TABLE Artist_Staging (
-    ArtistId INT PRIMARY KEY NOT NULL,
-    Name VARCHAR(120) NOT NULL
-);
-
-CREATE TABLE Album_Staging (
-    AlbumId INT PRIMARY KEY NOT NULL,
-    Title VARCHAR(160) NOT NULL,
-    ArtistId INT NOT NULL
-);
-
-CREATE TABLE Track_Staging (
-    TrackId INT PRIMARY KEY NOT NULL,
-    Name VARCHAR(200) NOT NULL,
-    AlbumId INT NOT NULL,
-    MediaTypeId INT NOT NULL,
-    GenreId INT NOT NULL,
-    Composer VARCHAR(220) NOT NULL,
-    Milliseconds INT NOT NULL,
-    Bytes INT NOT NULL,
-    UnitPrice DECIMAL(10, 2) NOT NULL
-);
-
-CREATE TABLE Genre_Staging (
-    GenreId INT PRIMARY KEY NOT NULL,
-    Name VARCHAR(120) NOT NULL
-);
-
-CREATE TABLE MediaType_Staging (
-    MediaTypeId INT PRIMARY KEY NOT NULL,
-    Name VARCHAR(120) NOT NULL
-);
-
-CREATE TABLE Customer_Staging (
-    CustomerId INT PRIMARY KEY NOT NULL,
-    FirstName VARCHAR(40) NOT NULL,
-    LastName VARCHAR(40) NOT NULL,
-    Company VARCHAR(80) NOT NULL,
-    Address VARCHAR(70) NOT NULL,
-    City VARCHAR(40) NOT NULL,
-    State VARCHAR(40) NOT NULL,
-    Country VARCHAR(40) NOT NULL,
-    PostalCode VARCHAR(10) NOT NULL,
-    Phone VARCHAR(24) NOT NULL,
-    Fax VARCHAR(24) NOT NULL,
-    Email VARCHAR(60) NOT NULL,
-    SupportRepId INT NOT NULL
-);
-
-CREATE TABLE Invoice_Staging (
-    InvoiceId INT PRIMARY KEY NOT NULL,
-    CustomerId INT NOT NULL,
-    InvoiceDate DATETIME NOT NULL,
-    BillingAddress VARCHAR(70) NOT NULL,
-    BillingCity VARCHAR(40) NOT NULL,
-    BillingState VARCHAR(40) NOT NULL,
-    BillingCountry VARCHAR(40) NOT NULL,
-    BillingPostalCode VARCHAR(10) NOT NULL,
-    Total DECIMAL(10, 2) NOT NULL
-);
-
-CREATE TABLE InvoiceLine_Staging (
-    InvoiceLineId INT PRIMARY KEY NOT NULL,
-    InvoiceId INT NOT NULL,
-    TrackId INT NOT NULL,
-    UnitPrice DECIMAL(10, 2) NOT NULL,
-    Quantity INT NOT NULL
-);
-
-CREATE TABLE Employee_Staging (
-    EmployeeId INT PRIMARY KEY NOT NULL,
-    FirstName VARCHAR(40) NOT NULL,
-    LastName VARCHAR(40) NOT NULL,
-    Title VARCHAR(40) NOT NULL,
-    ReportsTo INT NOT NULL,
-    BirthDate DATETIME NOT NULL,
-    HireDate DATETIME NOT NULL,
-    Address VARCHAR(70) NOT NULL,
-    City VARCHAR(40) NOT NULL,
-    State VARCHAR(40) NOT NULL,
-    Country VARCHAR(40) NOT NULL,
-    PostalCode VARCHAR(10) NOT NULL,
-    Phone VARCHAR(24) NOT NULL,
-    Fax VARCHAR(24) NOT NULL,
-    Email VARCHAR(60) NOT NULL
-);
-
 -- Dimension Tables
 CREATE TABLE dim_track (
     track_id INT PRIMARY KEY NOT NULL,
@@ -150,7 +62,6 @@ CREATE TABLE dim_date (
 
 CREATE TABLE fact_sales (
     fact_sales_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    invoice_id INT NOT NULL,
     customer_id INT NOT NULL,
     employee_id INT NOT NULL,
     track_id INT NOT NULL,
@@ -164,18 +75,4 @@ CREATE TABLE fact_sales (
     FOREIGN KEY (date_id) REFERENCES dim_date(date_id)
 );
 
--- Populate Dimension and Fact Tables (Same logic as the previous version)
-
--- Drop Staging Tables
-SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS Employee_Staging;
-DROP TABLE IF EXISTS InvoiceLine_Staging;
-DROP TABLE IF EXISTS Invoice_Staging;
-DROP TABLE IF EXISTS Customer_Staging;
-DROP TABLE IF EXISTS MediaType_Staging;
-DROP TABLE IF EXISTS Genre_Staging;
-DROP TABLE IF EXISTS Track_Staging;
-DROP TABLE IF EXISTS Album_Staging;
-DROP TABLE IF EXISTS Artist_Staging;
-SET FOREIGN_KEY_CHECKS = 1;
 
