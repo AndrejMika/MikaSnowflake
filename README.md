@@ -149,6 +149,81 @@ Na záver sa staging tabulky zmažú, aby sa udržal čistý environment:
     DROP TABLE IF EXISTS Invoice_Staging;
     DROP TABLE IF EXISTS InvoiceLine_Staging;
     DROP TABLE IF EXISTS Employee_Staging;
+    
+Vizualizácie Dashboardu
 
+Nasledujúce SQL dotazy sú navrhnuté pre vizualizácie, ktoré poskytujú užitočné prehľady o tržbách a výkonnosti zamestnancov:
+Sales by Country
 
+Zobrazí celkové tržby podľa krajiny:
+    
+    SELECT c.Country, SUM(f.Total) AS CountrySales
+    FROM Fact_Sales f
+    JOIN Dim_Customer c ON f.CustomerId = c.CustomerId
+    GROUP BY c.Country
+    ORDER BY CountrySales DESC;
+
+Top 10 Customers by Revenue
+
+Zobrazí top 10 zákazníkov podľa tržieb:
+
+    SELECT 
+        CONCAT(c.FirstName, ' ', c.LastName) AS FullName, 
+        SUM(f.Total) AS TotalRevenue
+    FROM Fact_Sales f
+    JOIN Dim_Customer c ON f.CustomerId = c.CustomerId
+    GROUP BY c.CustomerId, FullName
+    ORDER BY TotalRevenue DESC
+    LIMIT 10;
+
+Sales Over Time by Employee
+
+Zobrazí tržby za každý mesiac podľa zamestnanca:
+
+    SELECT 
+        CONCAT(d.Years, '-', LPAD(d.Months, 2, '0')) AS YearMonth,
+        CONCAT(e.FirstName, ' ', e.LastName) AS Name,
+        SUM(f.Total) AS EmployeeMonthlySales
+    FROM Fact_Sales f
+    JOIN Dim_Date d ON f.DateId = d.DateId
+    JOIN Dim_Employee e ON f.EmployeeId = e.EmployeeId
+    GROUP BY d.Years, d.Months, e.EmployeeId, Name
+    ORDER BY d.Years, d.Months;
+
+Sales by Genre
+
+Zobrazí tržby podľa žánru:
+    
+    SELECT t.GenreName, SUM(f.Total) AS GenreSales
+    FROM Fact_Sales f
+    JOIN Dim_Track t ON f.TrackId = t.TrackId
+    GROUP BY t.GenreName
+    ORDER BY GenreSales DESC;
+
+Sales by Months in Year
+
+Zobrazí tržby podľa mesiacov v roku:
+    
+    SELECT 
+        d.Years,
+        CASE d.Months
+            WHEN 1 THEN 'January'
+            WHEN 2 THEN 'February'
+            WHEN 3 THEN 'March'
+            WHEN 4 THEN 'April'
+            WHEN 5 THEN 'May'
+            WHEN 6 THEN 'June'
+            WHEN 7 THEN 'July'
+            WHEN 8 THEN 'August'
+            WHEN 9 THEN 'September'
+            WHEN 10 THEN 'October'
+            WHEN 11 THEN 'November'
+            WHEN 12 THEN 'December'
+        END AS MonthName,
+        SUM(f.Quantity * f.UnitPrice) AS MonthlyRevenue
+    FROM Fact_Sales f
+    JOIN Dim_Date d ON f.DateId = d.DateId
+    GROUP BY d.Years, d.Months
+    ORDER BY d.Years, d.Months;
+Tento README súbor poskytuje jasný a stručný prehľad o ETL procese a vizualizáciách dashboardu.
 Andrej Mika
