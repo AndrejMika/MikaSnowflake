@@ -9,11 +9,11 @@ Stručný popis ERD (Entity Relationship Diagram):
 
 Databázová schéma Chinook je navrhnutá na analýzu predajov hudobného obsahu. Hlavné entity zahŕňajú:
 
-    Zákazníci (Customers): Informácie o zákazníkoch, ako sú meno, adresa, kontaktné údaje a pod.
-    Zamestnanci (Employees): Informácie o zamestnancoch, ktorí spravujú predaje.
-    Produkty (Tracks, Albums, Genres, MediaTypes): Údaje o skladbách, albumoch, žánroch a médiách, cez ktoré sa predávajú skladby.
-    Predaje (Invoices a InvoiceLines): Transakčné údaje o nákupoch, ktoré zákazníci uskutočnili.
-    Dátumy (Date): Kľúčová dimenzia pre analýzu predajov podľa časových období (mesiace, roky, kvartály, atď.).
+Zákazníci (Customers): Informácie o zákazníkoch, ako sú meno, adresa, kontaktné údaje a pod.
+Zamestnanci (Employees): Informácie o zamestnancoch, ktorí spravujú predaje.
+Produkty (Tracks, Albums, Genres, MediaTypes): Údaje o skladbách, albumoch, žánroch a médiách, cez ktoré sa predávajú skladby.
+Predaje (Invoices a InvoiceLines): Transakčné údaje o nákupoch, ktoré zákazníci uskutočnili.
+Dátumy (Date): Kľúčová dimenzia pre analýzu predajov podľa časových období (mesiace, roky, kvartály, atď.).
 
 ERD Diagram Zdrojových Dát:
 
@@ -40,11 +40,11 @@ ETL Proces
 
 Pred spustením ETL procesu sa uistite, že sú splnené nasledujúce predpoklady:
 
-    Nastavenie Snowflake Warehousu: Musíte mať prístup k Snowflake inštancii s potrebnými oprávneniami na vytváranie a správu warehousov, databáz a schém.
+Nastavenie Snowflake Warehousu: Musíte mať prístup k Snowflake inštancii s potrebnými oprávneniami na vytváranie a správu warehousov, databáz a schém.
 
-    Súbory v Staging: Všetky CSV súbory musia byť nahrané do staging oblasti (@chinook_stage). Súbory musia byť vo formáte CSV s hlavičkami ktoré sa nachadzajú v tomto github repozitári.
+Súbory v Staging: Všetky CSV súbory musia byť nahrané do staging oblasti (@chinook_stage). Súbory musia byť vo formáte CSV s hlavičkami ktoré sa nachadzajú v tomto github repozitári.
 
-    Databáza a Schéma: Databáza LEMMING_CHINOOK_DB a schéma public by mali byť už vytvorené.
+Databáza a Schéma: Databáza LEMMING_CHINOOK_DB a schéma public by mali byť už vytvorené.
 
 Prehľad Súborov
 
