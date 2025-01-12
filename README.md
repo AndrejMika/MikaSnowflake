@@ -226,4 +226,5 @@ Zobrazí tržby podľa mesiacov v roku:
     GROUP BY d.Years, d.Months
     ORDER BY d.Years, d.Months;
 Tento README súbor poskytuje jasný a stručný prehľad o ETL procese a vizualizáciách dashboardu.
+
 Andrej Mika
