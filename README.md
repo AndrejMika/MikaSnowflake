@@ -17,14 +17,22 @@ Databázová schéma Chinook je navrhnutá na analýzu predajov hudobného obsah
 
 ERD Diagram Zdrojových Dát:
 
-    ![Chinook_ERD](https://github.com/user-attachments/assets/87f799f4-3615-47bf-bb86-2b635029c3e6)
+<p align="center">
+  <img src="Chinook_ERD.png" alt="ERD Schema">
+  <br>
+  <em>Obrázok 1 Entitno-relačná schéma AmazonBooks</em>
+</p>
 
 Tento diagram zobrazuje kľúčové tabulky a ich vzťahy, ktoré sú základom pre analytické procesy v rámci tohto projektu.
 
 
 STAR Diagram:
 
-    ![Chinook_Starschema](https://github.com/user-attachments/assets/bd1d45e9-3223-4dea-9db2-071e080b7ae1)
+<p align="center">
+  <img src="Chinook_Starschema.png" alt="ERD Schema">
+  <br>
+  <em>Obrázok 1 Entitno-relačná schéma AmazonBooks</em>
+</p>
 
 Tento diagram zobrazuje dimenzionálne tabulky a ich vzťahy s Tabuľkov faktov ktorá umožnuje lepšiu prístupnosť a vizualizáciu dát.
 
