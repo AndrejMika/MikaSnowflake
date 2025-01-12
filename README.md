@@ -20,7 +20,7 @@ ERD Diagram Zdrojových Dát:
 <p align="center">
   <img src="Chinook_ERD.png" alt="ERD Schema">
   <br>
-  <em>Obrázok 1 Entitno-relačná schéma AmazonBooks</em>
+  <em>Obrázok 1 Entitno-relačná schéma Chinook</em>
 </p>
 
 Tento diagram zobrazuje kľúčové tabulky a ich vzťahy, ktoré sú základom pre analytické procesy v rámci tohto projektu.
@@ -31,7 +31,7 @@ STAR Diagram:
 <p align="center">
   <img src="Chinook_Starschema.png" alt="ERD Schema">
   <br>
-  <em>Obrázok 1 Entitno-relačná schéma AmazonBooks</em>
+  <em>Obrázok 1 Star schéma Chinok</em>
 </p>
 
 Tento diagram zobrazuje dimenzionálne tabulky a ich vzťahy s Tabuľkov faktov ktorá umožnuje lepšiu prístupnosť a vizualizáciu dát.
