@@ -1,180 +1,154 @@
 # MikaSnowflake
-ETL proces datasetu Chinook
+ETL Proces pre Lemming Databázu
 
-Tento repozitár obsahuje implementáciu ETL procesu v Snowflake pre analýzu dát z Chinook databázy. Projekt sa zameriava na preskúmanie predajných trendov, preferencií zákazníkov a výkonnosti hudobného katalógu. Výsledný dátový model umožňuje multidimenzionálnu analýzu a vizualizáciu kľúčových metrik.
-1. Úvod a popis zdrojových dát
+Tento dokument popisuje ETL (Extract, Transform, Load) proces pre Lemming databázu, ktorá spracováva údaje z Chinook datasetu. Proces zahŕňa extrakciu údajov z CSV súborov uložených v staging oblasti, transformáciu do štruktúrovaného formátu a načítanie týchto údajov do dimenzionálnych a faktových tabuliek pre analýzu.
+Predpoklady
 
-Cieľom projektu je analyzovať dáta týkajúce sa predaja hudobných skladieb, zákazníkov, zamestnancov a fakturácie. Táto analýza umožňuje identifikovať najpredávanejšie skladby, regióny s najvyššími tržbami a správanie zákazníkov.
+Pred spustením ETL procesu sa uistite, že sú splnené nasledujúce predpoklady:
 
-Zdrojové dáta pochádzajú z Chinook databázy, ktorá obsahuje niekoľko hlavných tabuliek:
+    Nastavenie Snowflake Warehousu: Musíte mať prístup k Snowflake inštancii s potrebnými oprávneniami na vytváranie a správu warehousov, databáz a schém.
 
-    tracks: Informácie o skladbách (názov, album, interpret, žáner, dĺžka).
-    invoices: Údaje o faktúrach (dátum, zákazník, suma).
-    customers: Informácie o zákazníkoch (meno, adresa, krajina).
-    employees: Detaily o zamestnancoch (meno, pozícia, manažér).
-    invoice_items: Položky faktúr (skladba, cena, množstvo).
+    Súbory v Staging: Všetky CSV súbory musia byť nahrané do staging oblasti (@chinook_stage). Súbory musia byť vo formáte CSV s hlavičkami.
 
-1.1 Dátová architektúra
-ERD diagram
+    Databáza a Schéma: Databáza LEMMING_CHINOOK_DB a schéma public by mali byť už vytvorené.
 
-Surové dáta sú usporiadané v relačnom modeli, znázornenom na entitno-relačnom diagrame (ERD):
+Prehľad Súborov
 
-    Hlavné entity: Tracks, Customers, Invoices, Invoice_Items.
-    Vzťahy: Faktúry obsahujú položky, ktoré sa vzťahujú na konkrétne skladby. Zákazníci sú prepojení s faktúrami.
+Nasledujúce sekcie popisujú komponenty ETL procesu, vrátane vytvárania staging tabuliek, transformačných krokov a načítania údajov do dimenzionálnych a faktových tabuliek.
+Nastavenie Warehousu a Databázy
 
-2. Dimenzionálny model
+Skript najprv nastaví Snowflake warehouse a zabezpečí použitie správnej databázy a schémy:
 
-Navrhnutý bol hviezdicový model (star schema) s centrálnou faktovou tabuľkou fact_sales, ktorá je prepojená s nasledujúcimi dimenziami:
+CREATE WAREHOUSE IF NOT EXISTS LEMMING_WH;
+USE WAREHOUSE LEMMING_WH;
+USE LEMMING_CHINOOK_DB;
+USE SCHEMA LEMMING_CHINOOK_DB.public;
 
-    dim_tracks: Informácie o skladbách (názov, album, interpret, žáner).
-    dim_customers: Demografické údaje o zákazníkoch (krajina, mesto, veková kategória).
-    dim_date: Dátumové údaje (deň, mesiac, rok, štvrťrok).
-    dim_employees: Detaily o zamestnancoch (meno, pozícia, manažér).
+Staging Tably
 
-Diagram hviezdicového modelu
+Skript vytvára staging tabulky na uchovávanie surových údajov extrahovaných zo súborov CSV. Tieto tabulky sú:
 
-Schéma hviezdy ukazuje prepojenia medzi faktovou tabuľkou a dimenziami, zjednodušuje pochopenie a analýzu dát.
-3. ETL proces v Snowflake
+    Artist_Staging
+    Album_Staging
+    Track_Staging
+    Genre_Staging
+    MediaType_Staging
+    Customer_Staging
+    Invoice_Staging
+    InvoiceLine_Staging
+    Employee_Staging
 
-ETL proces zahŕňal tri fázy: Extract, Transform, Load.
-3.1 Extract (Extrahovanie dát)
+Príklad:
 
-Dáta boli najprv nahraté do Snowflake pomocou stage úložiska my_stage. Príklad:
+CREATE TABLE Artist_Staging (
+    ArtistId INT PRIMARY KEY,
+    Name VARCHAR(120)
+);
 
-CREATE OR REPLACE STAGE my_stage;
+Kopírovanie Údajov do Staging Tabuliek
 
-COPY INTO tracks_staging
-FROM @my_stage/tracks.csv
-FILE_FORMAT = (TYPE = 'CSV' SKIP_HEADER = 1);
+Údaje sú kopírované zo súborov CSV uložených v staging oblasti @chinook_stage do príslušných staging tabuliek. Súbory údajov by mali byť vo formáte CSV a prvý riadok by mal obsahovať hlavičky.
 
-3.2 Transform (Transformácia dát)
+Príklad:
 
-Dáta boli vyčistené a transformované do formátu vhodného pre analýzu.
-Dimenzia dim_tracks
+COPY INTO Artist_Staging
+FROM @chinook_stage/Artist.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
 
-Tabuľka obsahuje detaily o skladbách.
+Dimenzionálne Tably
 
-CREATE TABLE dim_tracks AS
-SELECT DISTINCT
-    t.TrackId AS dim_trackId,
-    t.Name AS track_name,
-    al.Title AS album_title,
-    ar.Name AS artist_name,
-    g.Name AS genre
-FROM tracks_staging t
-JOIN albums al ON t.AlbumId = al.AlbumId
-JOIN artists ar ON al.ArtistId = ar.ArtistId
-JOIN genres g ON t.GenreId = g.GenreId;
+Po načítaní surových údajov do staging tabuliek sa údaje transformujú a vkladajú do nasledujúcich dimenzionálnych tabuliek:
 
-Dimenzia dim_customers
+    Dim_Track
+    Dim_Customer
+    Dim_Employee
+    Dim_Date
 
-Obsahuje demografické údaje o zákazníkoch, ako sú krajina a mesto.
+Tabuľka Dim_Track je príkladom transformácie údajov:
 
-CREATE TABLE dim_customers AS
-SELECT DISTINCT
-    c.CustomerId AS dim_customerId,
-    c.FirstName || ' ' || c.LastName AS full_name,
-    c.Country AS country,
-    c.City AS city,
-    CASE 
-        WHEN c.Age BETWEEN 18 AND 24 THEN '18-24'
-        WHEN c.Age BETWEEN 25 AND 34 THEN '25-34'
-        WHEN c.Age BETWEEN 35 AND 44 THEN '35-44'
-        WHEN c.Age >= 45 THEN '45+'
-        ELSE 'Unknown'
-    END AS age_group
-FROM customers_staging c;
+CREATE OR REPLACE TABLE Dim_Track (
+    TrackId INT PRIMARY KEY,
+    Name VARCHAR(200),
+    Composer VARCHAR(220),
+    Milliseconds INT,
+    Bytes INT,
+    UnitPrice DECIMAL(10, 2),
+    AlbumTitle VARCHAR(160),
+    ArtistName VARCHAR(120),
+    GenreName VARCHAR(120),
+    MediaType VARCHAR(120)
+);
 
-Faktová tabuľka fact_sales
+Transformačný krok pre vkladanie údajov do tabuľky Dim_Track vyzerá takto:
 
-Faktová tabuľka obsahuje záznamy o predaji.
-
-CREATE TABLE fact_sales AS
+INSERT INTO Dim_Track (TrackId, Name, Composer, Milliseconds, Bytes, UnitPrice, AlbumTitle, ArtistName, GenreName, MediaType)
 SELECT 
-    ii.InvoiceLineId AS fact_salesId,
-    ii.UnitPrice * ii.Quantity AS total_sale,
-    d.dim_dateId AS dateID,
-    c.dim_customerId AS customerID,
-    t.dim_trackId AS trackID
-FROM invoice_items ii
-JOIN dim_date d ON ii.InvoiceId = d.InvoiceId
-JOIN dim_customers c ON ii.CustomerId = c.CustomerId
-JOIN dim_tracks t ON ii.TrackId = t.TrackId;
+    t.TrackId,
+    t.Name,
+    t.Composer,
+    t.Milliseconds,
+    t.Bytes,
+    t.UnitPrice,
+    a.Title AS AlbumTitle,
+    ar.Name AS ArtistName,
+    g.Name AS GenreName,
+    mt.Name AS MediaType
+FROM Track_Staging t
+JOIN Album_Staging a ON t.AlbumId = a.AlbumId
+JOIN Artist_Staging ar ON a.ArtistId = ar.ArtistId
+JOIN Genre_Staging g ON t.GenreId = g.GenreId
+JOIN MediaType_Staging mt ON t.MediaTypeId = mt.MediaTypeId;
 
-3.3 Load (Načítanie dát)
+Faktová Tabuľka
 
-Dáta boli nahraté do cieľového dátového skladu a staging tabuľky boli odstránené:
+Skript napĺňa faktovú tabuľku Fact_Sales s transakčnými údajmi z tabuliek Invoice_Staging a InvoiceLine_Staging. Táto faktová tabuľka odkazuje na dimenzionálne tabuľky.
 
-DROP TABLE IF EXISTS tracks_staging;
-DROP TABLE IF EXISTS customers_staging;
-DROP TABLE IF EXISTS invoices_staging;
-DROP TABLE IF EXISTS invoice_items_staging;
+CREATE OR REPLACE TABLE Fact_Sales (
+    FactSalesId INT PRIMARY KEY,
+    CustomerId INT,
+    EmployeeId INT,
+    TrackId INT,
+    DateId INT,
+    UnitPrice DECIMAL(10, 2),
+    Quantity INT,
+    Total DECIMAL(10, 2),
+    FOREIGN KEY (CustomerId) REFERENCES Dim_Customer(CustomerId),
+    FOREIGN KEY (EmployeeId) REFERENCES Dim_Employee(EmployeeId),
+    FOREIGN KEY (TrackId) REFERENCES Dim_Track(TrackId),
+    FOREIGN KEY (DateId) REFERENCES Dim_Date(DateId)
+);
 
-4. Vizualizácia dát
+Vkladanie údajov do tabuľky Fact_Sales:
 
-Dashboard obsahuje 6 vizualizácií:
-
-    Top 10 skladieb podľa predaja
-
+INSERT INTO Fact_Sales (FactSalesId, CustomerId, EmployeeId, TrackId, DateId, UnitPrice, Quantity, Total)
 SELECT 
-    t.track_name,
-    SUM(f.total_sale) AS total_sales
-FROM fact_sales f
-JOIN dim_tracks t ON f.trackID = t.dim_trackId
-GROUP BY t.track_name
-ORDER BY total_sales DESC
-LIMIT 10;
+    i.InvoiceId AS FactSalesId,
+    i.CustomerId,
+    c.SupportRepId AS EmployeeId,
+    ts.TrackId,
+    d.DateId,
+    il.UnitPrice,
+    il.Quantity,
+    i.Total
+FROM Invoice_Staging i
+JOIN InvoiceLine_Staging il ON i.InvoiceId = il.InvoiceId
+JOIN Track_Staging ts ON il.TrackId = ts.TrackId
+JOIN Dim_Date d ON d.Dates = DATE(i.InvoiceDate)
+JOIN Customer_Staging c ON i.CustomerId = c.CustomerId;
 
-Predaj podľa krajín
+Údržba
 
-SELECT 
-    c.country,
-    SUM(f.total_sale) AS total_sales
-FROM fact_sales f
-JOIN dim_customers c ON f.customerID = c.dim_customerId
-GROUP BY c.country
-ORDER BY total_sales DESC;
+Na záver sa staging tabulky zmažú, aby sa udržal čistý environment:
 
-Trend predaja podľa mesiacov
+DROP TABLE IF EXISTS Artist_Staging;
+DROP TABLE IF EXISTS Album_Staging;
+DROP TABLE IF EXISTS Track_Staging;
+DROP TABLE IF EXISTS Genre_Staging;
+DROP TABLE IF EXISTS MediaType_Staging;
+DROP TABLE IF EXISTS Customer_Staging;
+DROP TABLE IF EXISTS Invoice_Staging;
+DROP TABLE IF EXISTS InvoiceLine_Staging;
+DROP TABLE IF EXISTS Employee_Staging;
 
-SELECT 
-    d.month,
-    SUM(f.total_sale) AS total_sales
-FROM fact_sales f
-JOIN dim_date d ON f.dateID = d.dim_dateId
-GROUP BY d.month
-ORDER BY d.month;
-
-Najlepší zamestnanci podľa tržieb
-
-SELECT 
-    e.employee_name,
-    SUM(f.total_sale) AS total_sales
-FROM fact_sales f
-JOIN dim_employees e ON f.employeeID = e.dim_employeeId
-GROUP BY e.employee_name
-ORDER BY total_sales DESC;
-
-Rozdelenie predajov podľa žánru
-
-SELECT 
-    t.genre,
-    SUM(f.total_sale) AS total_sales
-FROM fact_sales f
-JOIN dim_tracks t ON f.trackID = t.dim_trackId
-GROUP BY t.genre
-ORDER BY total_sales DESC;
-
-Predaj počas dní v týždni
-
-    SELECT 
-        d.dayOfWeek,
-        SUM(f.total_sale) AS total_sales
-    FROM fact_sales f
-    JOIN dim_date d ON f.dateID = d.dim_dateId
-    GROUP BY d.dayOfWeek
-    ORDER BY total_sales DESC;
-
-Dashboard ponúka komplexný pohľad na predajné údaje, umožňuje identifikovať trendy a optimalizovať predajné stratégie.
 
 Andrej Mika
